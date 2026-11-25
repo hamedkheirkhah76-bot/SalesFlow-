@@ -538,6 +538,7 @@ async function hydrateState() {
   state.monthlyTargets = await getSetting("monthlyTargets", state.monthlyTargets);
   state.targetTotals = await getSetting("targetTotals", state.targetTotals);
   state.workingDays = await getSetting("workingDays", 0);
+  await hydrateSellersState(); // sellers.js — فروشندگان، اهداف، ظاهر گزارش فروشندگان
   state.sellersCount = await getSetting("sellersCount", state.sellersCount);
   const rawBaseline = await getSetting("monthBaseline", state.monthBaseline);
   state.monthBaseline = {
@@ -608,6 +609,7 @@ function updateInvoiceCheckFileStatus() {
 function switchManagementTab(tabKey) {
   $all("#management-tabs .tab-btn").forEach((b) => b.classList.toggle("active", b.dataset.mtab === tabKey));
   $all(".mtab-panel").forEach((p) => (p.style.display = p.id === `mtab-${tabKey}` ? "" : "none"));
+  if (typeof onManagementTabShown === "function") onManagementTabShown(tabKey);
 }
 
 /* ---------------------------------------------------------
@@ -1893,6 +1895,7 @@ function loadSettingsFormFromState() {
   $("#col-carton").value = state.columnMap.carton || "";
   $("#col-line").value = state.columnMap.line || "";
   $("#col-customer").value = state.columnMap.customer || "";
+  if ($("#col-seller")) $("#col-seller").value = getSellerColumn();
   $("#col-invoice").value = state.columnMap.invoice || "";
   $("#line1-excel-value").value = state.lines.line1.excelValue || "";
   $("#line2-excel-value").value = state.lines.line2.excelValue || "";
@@ -1919,12 +1922,17 @@ async function handleSaveColumns() {
     if (!isValidColumnLetter(v)) errors.push(`ستون «${f.label}» باید یک حرف معتبر ستون Excel باشد (مثلاً C).`);
     newMap[key] = v;
   });
+  // ستون فروشنده اختیاری است (فقط گزارش فروشندگان از آن استفاده می‌کند) و
+  // عمداً داخل columnMap نیست تا بقیه گزارش‌ها را وابسته به آن نکند.
+  const sellerCol = normalizeStr($("#col-seller") ? $("#col-seller").value : "").toUpperCase();
+  if (sellerCol !== "" && !isValidColumnLetter(sellerCol)) errors.push("ستون «فروشنده» باید یک حرف معتبر ستون Excel باشد (مثلاً D) یا خالی بماند.");
   if (errors.length) {
     errorSlot.innerHTML = errors.map((e) => `<div class="field-error">${escapeHtml(e)}</div>`).join("");
     return;
   }
   state.columnMap = newMap;
   await setSetting("columnMap", state.columnMap);
+  await setSellerColumn(sellerCol);
   showToast("تنظیمات ستون‌ها ذخیره شد", "success");
 }
 
@@ -2633,7 +2641,7 @@ async function handleResetReportStyle() {
 async function handleExportBackup() {
   const payload = {
     app: "SalesFlow",
-    backupVersion: 5,
+    backupVersion: 6,
     exportedAt: new Date().toISOString(),
     groups: state.groups,
     products: state.products,
@@ -2646,6 +2654,7 @@ async function handleExportBackup() {
     targetTotals: state.targetTotals,
     sellersCount: state.sellersCount,
     workingDays: state.workingDays,
+    sellers: sellersBackupPayload(),
     monthBaseline: state.monthBaseline,
     salesLog: await Store.getAll("salesLog"),
     // SalesFlow نسخه ۳ — گروه‌های مادر
@@ -2714,6 +2723,7 @@ async function handleImportBackupFile(file) {
     if (payload.targetTotals) await setSetting("targetTotals", payload.targetTotals);
     if (payload.sellersCount) await setSetting("sellersCount", payload.sellersCount);
     if (payload.workingDays != null) await setSetting("workingDays", payload.workingDays);
+    await restoreSellersFromBackup(payload.sellers);
     if (payload.monthBaseline) await setSetting("monthBaseline", payload.monthBaseline);
     if (payload.reportStyle) await setSetting("reportStyle", payload.reportStyle);
     if (Array.isArray(payload.salesLog)) {
@@ -2748,6 +2758,7 @@ async function handleImportBackupFile(file) {
     loadSettingsFormFromState();
     populateSingleReportSelectors();
     populateSeparationGroupSelect();
+    refreshSellersUI();
     handleRemoveSalesFile();
     renderTargetsTab();
     renderBaselineTab();
@@ -4237,6 +4248,7 @@ async function init() {
   updateBackupStatusText();
   checkBackupReminder();
 
+  initSellersFeature();
   bindNavigation();
   bindReportsView();
   bindManagementView();

@@ -679,3 +679,6 @@ body.sf-boot #app-shell > *:not(#app-lock-overlay) { visibility: hidden; }
 
 /* بررسی فاکتور: on narrow screens the two long stage tabs may wrap instead of overflowing */
 #sep-mode-tabs { flex-wrap: wrap; max-width: 100%; }
+
+/* مدیریت: با اضافه شدن تب‌های فروشندگان، تب‌ها در صفحه‌های باریک بشکنند و بیرون نزنند */
+#management-tabs, #report-subtabs { flex-wrap: wrap; max-width: 100%; }

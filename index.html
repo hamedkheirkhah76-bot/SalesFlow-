@@ -202,21 +202,15 @@
           <div class="page-header-sub">گزارش فروش روزانه خود را در چند ثانیه تولید کنید</div>
         </div>
 
-        <!-- گزارش کلی -->
+        <!-- فایل فروش (مشترک بین هر سه بخش) -->
         <div class="card">
           <div class="card-header">
             <div>
-              <div class="card-title">گزارش کلی</div>
-              <div class="card-subtitle">فایل فروش روزانه را انتخاب کنید و گزارش را تولید کنید</div>
+              <div class="card-title">فایل فروش</div>
+              <div class="card-subtitle">یک بار فایل را انتخاب کنید؛ برای گزارش کلی، گزارش فروشندگان و گزارش تکی استفاده می‌شود</div>
             </div>
           </div>
-
           <div class="stack">
-            <div class="field" style="max-width:260px">
-              <label>قالب گزارش</label>
-              <select id="report-format-select"></select>
-            </div>
-
             <div class="file-drop" id="sales-file-drop">
               <input type="file" id="sales-file-input" accept=".xlsx,.xls" style="display:none" />
               <span class="icon"><svg><use href="#icon-upload-cloud"></use></svg></span>
@@ -231,6 +225,30 @@
             </div>
 
             <div id="sales-file-warning-slot"></div>
+          </div>
+        </div>
+
+        <!-- زیرمنوهای گزارش‌گیری -->
+        <div class="tabs" id="report-subtabs" style="margin-bottom:var(--space-5)">
+          <button type="button" class="tab-btn active" data-rtab="general">گزارش کلی</button>
+          <button type="button" class="tab-btn" data-rtab="sellers">گزارش فروشندگان</button>
+          <button type="button" class="tab-btn" data-rtab="single">گزارش تکی</button>
+        </div>
+
+        <!-- ===== گزارش کلی ===== -->
+        <div class="rtab-panel" id="rtab-general">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">گزارش کلی</div>
+              <div class="card-subtitle">قالب گزارش را انتخاب کنید و گزارش را تولید کنید</div>
+            </div>
+          </div>
+          <div class="stack">
+            <div class="field" style="max-width:260px">
+              <label>قالب گزارش</label>
+              <select id="report-format-select"></select>
+            </div>
 
             <div class="row">
               <button class="btn btn-primary" id="btn-generate-report" disabled>
@@ -277,7 +295,42 @@
           <div class="field-hint" style="margin-top:var(--space-3)" id="save-daily-sale-hint">با این دکمه، فروش امروز در مخزن فروش ذخیره می‌شود و برای محاسبه «فروش از ابتدای ماه» روز بعد استفاده خواهد شد.</div>
         </div>
 
-        <!-- گزارش تکی -->
+        </div><!-- /rtab-general -->
+
+        <!-- ===== گزارش فروشندگان ===== -->
+        <div class="rtab-panel" id="rtab-sellers" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">گزارش فروش فروشندگان</div>
+                <div class="card-subtitle">فروش، هدف و پوشش هر فروشنده به تفکیک سرپرست، برای هر دو لاین</div>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="btn-sellers-style">
+                <span class="icon"><svg><use href="#icon-palette"></use></svg></span> تنظیمات ظاهر
+              </button>
+            </div>
+            <div class="form-grid">
+              <div class="field">
+                <label>تاریخ گزارش (شمسی)</label>
+                <div class="row" style="gap:var(--space-2)">
+                  <input type="number" id="sr-date-y" placeholder="سال" style="width:90px" />
+                  <input type="number" id="sr-date-m" placeholder="ماه" min="1" max="12" style="width:70px" />
+                  <input type="number" id="sr-date-d" placeholder="روز" min="1" max="31" style="width:70px" />
+                </div>
+              </div>
+            </div>
+            <div class="row" style="margin-top:var(--space-4)">
+              <button class="btn btn-primary" id="btn-sellers-generate">
+                <span class="icon"><svg><use href="#icon-bar-chart"></use></svg></span> تولید گزارش فروشندگان
+              </button>
+            </div>
+            <div id="sellers-warning-slot"></div>
+            <div id="sellers-report-output"></div>
+          </div>
+        </div>
+
+        <!-- ===== گزارش تکی ===== -->
+        <div class="rtab-panel" id="rtab-single" style="display:none">
         <div class="card">
           <div class="card-header">
             <div>
@@ -312,6 +365,7 @@
 
           <div id="single-report-output" style="margin-top: var(--space-5)"></div>
         </div>
+        </div><!-- /rtab-single -->
 
       </section>
 
@@ -326,6 +380,8 @@
           <button class="tab-btn active" data-mtab="groups">گروه کالاها</button>
           <button class="tab-btn" data-mtab="products">کد کالاها</button>
           <button class="tab-btn" data-mtab="report-def">تعریف گزارش کلی</button>
+          <button class="tab-btn" data-mtab="sellers-def">تعریف فروشندگان</button>
+          <button class="tab-btn" data-mtab="sellers-targets">اهداف فروشندگان</button>
           <button class="tab-btn" data-mtab="targets">اهداف ماهانه</button>
           <button class="tab-btn" data-mtab="baseline">گزارش فروش تا روز</button>
           <button class="tab-btn" data-mtab="history">تاریخچه فروش</button>
@@ -478,6 +534,48 @@
                   <span class="icon"><svg><use href="#icon-save"></use></svg></span> ذخیره تنظیمات لاین دو
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+
+                <!-- --- تعریف فروشندگان --- -->
+        <div class="mtab-panel" id="mtab-sellers-def" style="display:none">
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header"><div><div class="card-title"><span class="line-dot line1"></span> فروشندگان لاین یک</div>
+                <div class="card-subtitle">اول سرپرست‌ها، بعد فروشنده‌ها با کد، نام و سرپرست</div></div></div>
+              <div id="sellers-def-line1-slot"></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div><div class="card-title"><span class="line-dot line2"></span> فروشندگان لاین دو</div>
+                <div class="card-subtitle">اول سرپرست‌ها، بعد فروشنده‌ها با کد، نام و سرپرست</div></div></div>
+              <div id="sellers-def-line2-slot"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- --- اهداف فروشندگان --- -->
+        <div class="mtab-panel" id="mtab-sellers-targets" style="display:none">
+          <div class="card" style="margin-bottom:var(--space-5)">
+            <div class="card-header"><div>
+              <div class="card-title">تعداد روز کاری ماه</div>
+              <div class="card-subtitle">هدف روزانه هر فروشنده = هدف ماهانه ÷ این عدد (همان عدد روز کاری «اهداف ماهانه» است)</div>
+            </div></div>
+            <div class="row" style="align-items:center; flex-wrap:wrap; gap:var(--space-3)">
+              <input type="number" min="1" max="31" step="1" id="sellers-working-days-input" placeholder="مثلاً ۲۴" style="width:140px" />
+              <button class="btn btn-primary" id="btn-save-sellers-working-days">ذخیره روز کاری</button>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header"><div><div class="card-title"><span class="line-dot line1"></span> اهداف فروشندگان لاین یک</div>
+                <div class="card-subtitle">هدف ماهانه هر فروشنده (کارتن) — هر ماه دستی وارد کنید</div></div></div>
+              <div id="sellers-targets-line1-slot"></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div><div class="card-title"><span class="line-dot line2"></span> اهداف فروشندگان لاین دو</div>
+                <div class="card-subtitle">هدف ماهانه هر فروشنده (کارتن) — هر ماه دستی وارد کنید</div></div></div>
+              <div id="sellers-targets-line2-slot"></div>
             </div>
           </div>
         </div>
@@ -668,6 +766,10 @@
               <label>کد مشتری</label>
               <input type="text" id="col-customer" maxlength="3" placeholder="مثلاً B" />
             </div>
+              <div class="field">
+                <label>ستون فروشنده (اختیاری — فقط برای گزارش فروشندگان)</label>
+                <input type="text" id="col-seller" maxlength="3" placeholder="مثلاً D" />
+              </div>
             <div class="field">
               <label>شماره پیش‌فاکتور</label>
               <input type="text" id="col-invoice" maxlength="3" placeholder="مثلاً I" />
@@ -795,5 +897,6 @@
 
 <script src="xlsx.full.min.js"></script>
 <script src="app.js"></script>
+  <script src="sellers.js"></script>
 </body>
 </html>
